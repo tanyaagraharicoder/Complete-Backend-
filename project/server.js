@@ -1,3 +1,5 @@
+require('dotenv').config(); // Load environment variables from the .env file
+
 const app = require('./src/app'); // Import the Express application from the app.js file in the src directory
 
 
