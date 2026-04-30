@@ -1,8 +1,13 @@
 const express = require('express');
 const multer = require('multer');
 const uploadFile = require('../services/storage.service'); // FIXED PATH
-const postModel = require("./models/post.model"); // Import the post model for database operations
+const postModel = require("./models/post.model");
+ // Import the post model for database operations
+
+ const cors = require('cors');
 const app = express();
+app.use(cors());
+
 
 app.use(express.json());
 
