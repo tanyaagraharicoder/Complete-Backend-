@@ -20,5 +20,5 @@ artist : {
 
 })
 
-const musicModel = mongoose.model('music', musicSchema);
+const musicModel = mongoose.model('musics', musicSchema);
 module.exports = musicModel;

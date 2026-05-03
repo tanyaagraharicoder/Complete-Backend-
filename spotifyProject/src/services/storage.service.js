@@ -7,7 +7,6 @@ const imagekit = new ImageKit({
 });
 
 async function uploadFile(file) {
-
     const result = await imagekit.upload({
         file,
         fileName: "Music_" + Date.now(),
@@ -17,4 +16,4 @@ async function uploadFile(file) {
     return result;
 }
 
-module.exports = uploadFile;
+module.exports = { uploadFile };

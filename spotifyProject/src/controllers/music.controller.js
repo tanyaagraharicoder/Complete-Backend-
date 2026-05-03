@@ -1,29 +1,15 @@
-const musicModel = require('../models/music.model');
+const Music = require('../models/music.model');
+const { uploadFile } = require('../services/storage.service');
+const Album = require('../models/album.model');
+const { verify } = require('jsonwebtoken');
 
-const uploadFile = require('../services/storage.service');
-
-const jwt = require('jsonwebtoken');
 
 async function createMusic(req, res) {
 
-    try {
-
-        const token = req.cookies?.token;
-
-        if (!token) {
-            return res.status(401).json({ message: "Unauthorized: No token" });
-        }
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-        if (decoded.role !== 'artist') {
-            return res.status(403).json({ message: "Forbidden: Only artists can create music" });
-        }
-
+   
         const { title } = req.body;
         const file = req.file;
 
-        // ✅ validation
         if (!title) {
             return res.status(400).json({ message: "Title is required" });
         }
@@ -32,17 +18,16 @@ async function createMusic(req, res) {
             return res.status(400).json({ message: "Music file is required" });
         }
 
-        // optional: check file type
         if (!file.mimetype.startsWith("audio/")) {
             return res.status(400).json({ message: "Only audio files are allowed" });
         }
 
         const result = await uploadFile(file.buffer.toString('base64'));
 
-        const music = await musicModel.create({
+        const music = await Music.create({
             uri: result.url,
             title,
-            artist: decoded.id
+            artist: req.user.id
         });
 
         res.status(201).json({
@@ -55,16 +40,45 @@ async function createMusic(req, res) {
             }
         });
 
-    } catch (error) {
-        console.error(error);
+    } 
 
-        if (error.name === "JsonWebTokenError") {
-            return res.status(401).json({ message: "Invalid token" });
+
+
+
+async function createAlbum(req, res) {
+
+
+
+    
+
+        const { title, musicIds } = req.body;
+
+        if (!title) {
+            return res.status(400).json({ message: "Title is required" });
         }
 
-        return res.status(500).json({ message: "Internal Server Error" });
-    }
+        if (!musicIds || !Array.isArray(musicIds)) {
+            return res.status(400).json({ message: "musicIds must be an array" });
+        }
 
-}
+        const album = await Album.create({
+            title,
+            artist: req.user.id,
+            musics: musicIds
+        });
 
-module.exports = { createMusic };
+        res.status(201).json({
+            message: "Album created successfully",
+            album: {
+                id: album._id,
+                title: album.title,
+                artist: album.artist,
+                musics: album.musics
+            }
+        });
+
+    } 
+
+
+
+module.exports = { createMusic, createAlbum };
