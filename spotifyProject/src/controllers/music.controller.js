@@ -2,6 +2,7 @@ const Music = require('../models/music.model');
 const { uploadFile } = require('../services/storage.service');
 const Album = require('../models/album.model');
 const { verify } = require('jsonwebtoken');
+const musicModel = require('../models/music.model');
 
 
 async function createMusic(req, res) {
@@ -79,6 +80,45 @@ async function createAlbum(req, res) {
 
     } 
 
+async function getAllMusics(req, res) {
+  try {
+    const musics = await musicModel
+      .find()
+      .populate("artist", "name");
 
+    res.status(200).json({
+      message: "Musics retrieved successfully",
+      musics: musics,
+    });
 
-module.exports = { createMusic, createAlbum };
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching musics",
+      error: error.message,
+    });
+  }
+}
+
+async function getAllAlbums(req, res) {
+  try {
+    const albums = await Album
+      .find()
+      .select("title artist musics") // include musics
+      .populate("artist", "name email") // match schema
+      .populate("musics"); // must match schema field
+
+    res.status(200).json({
+      message: "Album fetched successfully",
+      albums,
+    });
+
+  } catch (error) {
+    console.log(error); // 👈 important for debugging
+    res.status(500).json({
+      message: "Error fetching albums",
+      error: error.message,
+    });
+  }
+}
+
+module.exports = { createMusic, createAlbum, getAllMusics , getAllAlbums};
